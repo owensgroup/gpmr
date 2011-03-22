@@ -1,0 +1,388 @@
+CUDA_DIR=/usr/local/cuda
+MPI_DIR=/usr/mpi/gcc/mvapich2-1.4.1
+
+CC=$(MPI_DIR)/bin/mpicxx
+CCFLAGS=-rdynamic -I include -I $(CUDA_DIR)/include -g -D MPICH_IGNORE_CXX_SEEK
+NVCC=$(CUDA_DIR)/bin/nvcc
+NVCCFLAGS=-arch sm_11 -I include -I $(CUDA_DIR)/include -g --compiler-options -rdynamic
+AR=ar crv
+LIBS=-L lib -L $(CUDA_DIR)/lib64 -lgpmr -lcudacpp -loscpp -lcudart -lmpich -lpthread -lcudpp64
+LDFLAGS=-g -rdynamic
+
+.SUFFIXES: .cpp .cu .o
+
+LIB_SRC=                              \
+src/Binner.cpp                        \
+src/Chunk.cpp                         \
+src/Combiner.cpp                      \
+src/EmitConfiguration.cpp             \
+src/FixedSizeBinner.cpp               \
+src/FixedSizeBinnerIORequest.cpp      \
+src/FixedSizeChunk.cpp                \
+src/FixedSizeMapReduceJob.cpp         \
+src/FixedSizeRangePartitioner.cpp     \
+src/FixedSizeRangePartitioner.cu      \
+src/IntIntSorter.cpp                  \
+src/IntIntSorter.cu                   \
+src/IntIntRoundRobinPartitioner.cpp   \
+src/IntIntRoundRobinPartitioner.cu    \
+src/ItemCollection.cpp                \
+src/MapReduceJob.cpp                  \
+src/Mapper.cpp                        \
+src/Partitioner.cpp                   \
+src/PartialReducer.cpp                \
+src/PreLoadedFixedSizeChunk.cpp       \
+src/Reducer.cpp                       \
+src/SerializedItemCollection.cpp      \
+src/Sorter.cpp                        \
+src/VectorOps.cpp                     \
+
+LIB_OBJ=                              \
+obj/Binner.cpp.o                      \
+obj/Chunk.cpp.o                       \
+obj/Combiner.cpp.o                    \
+obj/EmitConfiguration.cpp.o           \
+obj/FixedSizeBinner.cpp.o             \
+obj/FixedSizeBinnerIORequest.cpp.o    \
+obj/FixedSizeChunk.cpp.o              \
+obj/FixedSizeMapReduceJob.cpp.o       \
+obj/FixedSizeRangePartitioner.cpp.o   \
+obj/FixedSizeRangePartitioner.cu.o    \
+obj/IntIntSorter.cpp.o                \
+obj/IntIntSorter.cu.o                 \
+obj/IntIntRoundRobinPartitioner.cpp.o \
+obj/IntIntRoundRobinPartitioner.cu.o  \
+obj/ItemCollection.cpp.o              \
+obj/MapReduceJob.cpp.o                \
+obj/Mapper.cpp.o                      \
+obj/Partitioner.cpp.o                 \
+obj/PartialReducer.cpp.o              \
+obj/PreLoadedFixedSizeChunk.cpp.o     \
+obj/Reducer.cpp.o                     \
+obj/SerializedItemCollection.cpp.o    \
+obj/Sorter.cpp.o                      \
+obj/VectorOps.cpp.o                   \
+
+LIB_OUTPUT=lib/libgpmr.a
+
+TEST_APPS=                    \
+bin/kmeans/gen_data_file      \
+bin/kmeans/kmeans             \
+bin/wordcount/gen_data_file   \
+bin/wordcount/test_data_file  \
+bin/wordcount/wordcount       \
+bin/linreg/gen_data_file      \
+bin/linreg/linreg             \
+bin/intcount/intcount         \
+bin/matmul/matmul             \
+
+HISTOGRAM_SRC=                              \
+test/histogram/main.cpp                     \
+test/histogram/HistogramBinner.cpp          \
+test/histogram/HistogramIORequest.cpp       \
+test/histogram/HistogramMapper.cpp          \
+test/histogram/HistogramMapper.cu           \
+test/histogram/HistogramMapReduceJob.cpp    \
+test/histogram/HistogramPartitioner.cpp     \
+test/histogram/HistogramPartitioner.cu      \
+test/histogram/HistogramReducer.cpp         \
+test/histogram/HistogramReducer.cu          \
+test/histogram/HistogramSorter.cpp          \
+
+HISTOGRAM_OBJ=                                      \
+test/histogram/obj/main.o                           \
+test/histogram/obj/HistogramBinner.o                \
+test/histogram/obj/HistogramIORequest.o             \
+test/histogram/obj/HistogramMapper.o                \
+test/histogram/obj/HistogramMapper.cu.o             \
+test/histogram/obj/HistogramMapReduceJob.o          \
+test/histogram/obj/HistogramPartitioner.o           \
+test/histogram/obj/HistogramPartitioner.cu.o        \
+test/histogram/obj/HistogramReducer.o               \
+test/histogram/obj/HistogramReducer.cu.o            \
+test/histogram/obj/HistogramSorter.o                \
+
+KMEANS_SRC=                           \
+test/kmeans/main.cpp                  \
+test/kmeans/KMeansMapper.cpp          \
+test/kmeans/KMeansMapper.cu           \
+test/kmeans/KMeansReducer.cpp         \
+test/kmeans/KMeansReducer.cu          \
+
+KMEANS_OBJ=                               \
+test/kmeans/obj/main.o                    \
+test/kmeans/obj/KMeansMapper.o            \
+test/kmeans/obj/KMeansMapper.cu.o         \
+test/kmeans/obj/KMeansReducer.o           \
+test/kmeans/obj/KMeansReducer.cu.o        \
+
+WORDCOUNT_SRC=                              \
+test/wordcount/main.cpp                     \
+test/wordcount/WordCountMapper.cpp          \
+test/wordcount/WordCountMapper.cu           \
+test/wordcount/WordCountPartitioner.cpp     \
+test/wordcount/WordCountPartitioner.cu      \
+test/wordcount/WordCountReducer.cpp         \
+test/wordcount/WordCountReducer.cu          \
+test/wordcount/WordCountSorter.cpp          \
+
+WORDCOUNT_OBJ=                                  \
+test/wordcount/obj/main.o                       \
+test/wordcount/obj/WordCountMapper.o            \
+test/wordcount/obj/WordCountMapper.cu.o         \
+test/wordcount/obj/WordCountReducer.o           \
+test/wordcount/obj/WordCountReducer.cu.o        \
+
+LINREG_SRC=                               \
+test/linreg/main.cpp                      \
+test/linreg/LinearRegressionMapper.cpp    \
+test/linreg/LinearRegressionMapper.cu     \
+test/linreg/LinearRegressionReducer.cpp   \
+test/linreg/LinearRegressionReducer.cu    \
+
+LINREG_OBJ=                                   \
+test/linreg/obj/main.o                        \
+test/linreg/obj/LinearRegressionMapper.o      \
+test/linreg/obj/LinearRegressionMapper.cu.o   \
+test/linreg/obj/LinearRegressionReducer.o     \
+test/linreg/obj/LinearRegressionReducer.cu.o  \
+
+INTCOUNT_SRC=                         \
+test/intcount/main.cpp                \
+test/intcount/IntCountMapper.cpp      \
+test/intcount/IntCountMapper.cu       \
+test/intcount/IntCountReducer.cpp     \
+test/intcount/IntCountReducer.cu      \
+
+INTCOUNT_OBJ=                               \
+test/intcount/obj/main.o                    \
+test/intcount/obj/IntCountMapper.o          \
+test/intcount/obj/IntCountMapper.cu.o       \
+test/intcount/obj/IntCountReducer.o         \
+test/intcount/obj/IntCountReducer.cu.o      \
+
+MATMUL_SRC=                       \
+test/matmul/main.cpp              \
+test/matmul/MatMulMapper.cpp      \
+test/matmul/MatMulMapper.cu       \
+
+MATMUL_OBJ=                             \
+test/matmul/obj/main.o                  \
+test/matmul/obj/MatMulMapper.o          \
+test/matmul/obj/MatMulMapper.cu.o       \
+
+OBJ=$(LIB_OBJ)
+
+all: $(LIB_OUTPUT) $(TEST_APPS)
+
+$(LIB_OUTPUT): $(OBJ)
+	$(AR) $(LIB_OUTPUT) $(OBJ)
+
+
+
+
+
+
+bin/kmeans/gen_data_file: test/kmeans/obj/gen_data_file.o
+	$(CC) $(LDFLAGS) -o bin/kmeans/gen_data_file test/kmeans/obj/gen_data_file.o $(LIBS)
+
+test/kmeans/obj/gen_data_file.o: test/kmeans/gen_data_file.cpp
+	$(CC) $(CCFLAGS) -I test/kmeans test/kmeans/gen_data_file.cpp -c -o test/kmeans/obj/gen_data_file.o
+
+bin/kmeans/kmeans: $(KMEANS_OBJ) $(LIB_OUTPUT)
+	$(CC) $(LDFLAGS) -o bin/kmeans/kmeans $(KMEANS_OBJ) $(LIBS)
+
+test/kmeans/obj/main.o: test/kmeans/main.cpp
+	$(CC) $(CCFLAGS) -I test/kmeans test/kmeans/main.cpp -c -o test/kmeans/obj/main.o
+
+test/kmeans/obj/KMeansMapper.o: test/kmeans/KMeansMapper.cpp
+	$(CC) $(CCFLAGS) -I test/kmeans test/kmeans/KMeansMapper.cpp -c -o test/kmeans/obj/KMeansMapper.o
+
+test/kmeans/obj/KMeansMapper.cu.o: test/kmeans/KMeansMapper.cu include/gpmr/GPMRGPUFunctions.h include/gpmr/GPMRGPUGridFunctions.h
+	$(NVCC) $(NVCCFLAGS) -I test/kmeans test/kmeans/KMeansMapper.cu -c -o test/kmeans/obj/KMeansMapper.cu.o
+
+test/kmeans/obj/KMeansReducer.o: test/kmeans/KMeansReducer.cpp
+	$(CC) $(CCFLAGS) -I test/kmeans test/kmeans/KMeansReducer.cpp -c -o test/kmeans/obj/KMeansReducer.o
+
+test/kmeans/obj/KMeansReducer.cu.o: test/kmeans/KMeansReducer.cu include/gpmr/GPMRGPUFunctions.h include/gpmr/GPMRGPUGridFunctions.h
+	$(NVCC) $(NVCCFLAGS) -I test/kmeans test/kmeans/KMeansReducer.cu -c -o test/kmeans/obj/KMeansReducer.cu.o
+
+
+
+
+bin/wordcount/gen_data_file: test/wordcount/obj/gen_data_file.o
+	$(CC) $(LDFLAGS) -o bin/wordcount/gen_data_file test/wordcount/obj/gen_data_file.o $(LIBS)
+
+test/wordcount/obj/gen_data_file.o: test/wordcount/gen_data_file.cpp
+	$(CC) $(CCFLAGS) -I test/wordcount test/wordcount/gen_data_file.cpp -c -o test/wordcount/obj/gen_data_file.o
+
+bin/wordcount/test_data_file: test/wordcount/obj/test_data_file.cu.o
+	$(CC) $(LDFLAGS) -o bin/wordcount/test_data_file test/wordcount/obj/test_data_file.cu.o $(LIBS)
+
+test/wordcount/obj/test_data_file.cu.o: test/wordcount/test_data_file.cu
+	$(NVCC) $(NVCCFLAGS) -I test/wordcount test/wordcount/test_data_file.cu -c -o test/wordcount/obj/test_data_file.cu.o
+
+bin/wordcount/wordcount: $(WORDCOUNT_OBJ) $(LIB_OUTPUT)
+	$(CC) $(LDFLAGS) -o bin/wordcount/wordcount $(WORDCOUNT_OBJ) $(LIBS) -Wl,-Map,bin/wordcount/wordcount.map
+
+test/wordcount/obj/main.o: test/wordcount/main.cpp
+	$(CC) $(CCFLAGS) -I test/wordcount test/wordcount/main.cpp -c -o test/wordcount/obj/main.o
+
+test/wordcount/obj/WordCountMapper.o: test/wordcount/WordCountMapper.cpp
+	$(CC) $(CCFLAGS) -I test/wordcount test/wordcount/WordCountMapper.cpp -c -o test/wordcount/obj/WordCountMapper.o
+
+test/wordcount/obj/WordCountMapper.cu.o: test/wordcount/WordCountMapper.cu include/gpmr/GPMRGPUFunctions.h include/gpmr/GPMRGPUGridFunctions.h
+	$(NVCC) $(NVCCFLAGS) -I test/wordcount test/wordcount/WordCountMapper.cu -c -o test/wordcount/obj/WordCountMapper.cu.o
+
+test/wordcount/obj/WordCountReducer.o: test/wordcount/WordCountReducer.cpp
+	$(CC) $(CCFLAGS) -I test/wordcount test/wordcount/WordCountReducer.cpp -c -o test/wordcount/obj/WordCountReducer.o
+
+test/wordcount/obj/WordCountReducer.cu.o: test/wordcount/WordCountReducer.cu include/gpmr/GPMRGPUFunctions.h include/gpmr/GPMRGPUGridFunctions.h
+	$(NVCC) $(NVCCFLAGS) -I test/wordcount test/wordcount/WordCountReducer.cu -c -o test/wordcount/obj/WordCountReducer.cu.o
+
+
+
+
+bin/linreg/gen_data_file: test/linreg/obj/gen_data_file.o
+	$(CC) $(LDFLAGS) -o bin/linreg/gen_data_file test/linreg/obj/gen_data_file.o $(LIBS)
+
+test/linreg/obj/gen_data_file.o: test/linreg/gen_data_file.cpp
+	$(CC) $(CCFLAGS) -I test/linreg test/linreg/gen_data_file.cpp -c -o test/linreg/obj/gen_data_file.o
+
+test/linreg/obj/LinearRegressionMapper.o: test/linreg/LinearRegressionMapper.cpp
+	$(CC) $(CCFLAGS) -I test/linreg test/linreg/LinearRegressionMapper.cpp -c -o test/linreg/obj/LinearRegressionMapper.o
+
+test/linreg/obj/LinearRegressionMapper.cu.o: test/linreg/LinearRegressionMapper.cu include/gpmr/GPMRGPUFunctions.h include/gpmr/GPMRGPUGridFunctions.h
+	$(NVCC) $(NVCCFLAGS) -I test/linreg test/linreg/LinearRegressionMapper.cu -c -o test/linreg/obj/LinearRegressionMapper.cu.o
+
+test/linreg/obj/LinearRegressionReducer.o: test/linreg/LinearRegressionReducer.cpp
+	$(CC) $(CCFLAGS) -I test/linreg test/linreg/LinearRegressionReducer.cpp -c -o test/linreg/obj/LinearRegressionReducer.o
+
+test/linreg/obj/LinearRegressionReducer.cu.o: test/linreg/LinearRegressionReducer.cu include/gpmr/GPMRGPUFunctions.h include/gpmr/GPMRGPUGridFunctions.h
+	$(NVCC) $(NVCCFLAGS) -I test/linreg test/linreg/LinearRegressionReducer.cu -c -o test/linreg/obj/LinearRegressionReducer.cu.o
+
+bin/linreg/linreg: $(LINREG_OBJ) $(LIB_OUTPUT)
+	$(CC) $(LDFLAGS) -o bin/linreg/linreg $(LINREG_OBJ) $(LIBS) -Wl,-Map,bin/linreg/linreg.map
+
+test/linreg/obj/main.o: test/linreg/main.cpp
+	$(CC) $(CCFLAGS) -I test/linreg test/linreg/main.cpp -c -o test/linreg/obj/main.o
+
+
+
+
+test/intcount/obj/gen_data_file.o: test/intcount/gen_data_file.cpp
+	$(CC) $(CCFLAGS) -I test/intcount test/intcount/gen_data_file.cpp -c -o test/intcount/obj/gen_data_file.o
+
+test/intcount/obj/IntCountMapper.o: test/intcount/IntCountMapper.cpp
+	$(CC) $(CCFLAGS) -I test/intcount test/intcount/IntCountMapper.cpp -c -o test/intcount/obj/IntCountMapper.o
+
+test/intcount/obj/IntCountMapper.cu.o: test/intcount/IntCountMapper.cu include/gpmr/GPMRGPUFunctions.h include/gpmr/GPMRGPUGridFunctions.h
+	$(NVCC) $(NVCCFLAGS) -I test/intcount test/intcount/IntCountMapper.cu -c -o test/intcount/obj/IntCountMapper.cu.o
+
+test/intcount/obj/IntCountReducer.o: test/intcount/IntCountReducer.cpp
+	$(CC) $(CCFLAGS) -I test/intcount test/intcount/IntCountReducer.cpp -c -o test/intcount/obj/IntCountReducer.o
+
+test/intcount/obj/IntCountReducer.cu.o: test/intcount/IntCountReducer.cu include/gpmr/GPMRGPUFunctions.h include/gpmr/GPMRGPUGridFunctions.h
+	$(NVCC) $(NVCCFLAGS) -I test/intcount test/intcount/IntCountReducer.cu -c -o test/intcount/obj/IntCountReducer.cu.o
+
+bin/intcount/intcount: $(INTCOUNT_OBJ) $(LIB_OUTPUT)
+	$(CC) $(LDFLAGS) -o bin/intcount/intcount $(INTCOUNT_OBJ) $(LIBS) -Wl,-Map,bin/intcount/intcount.map
+
+test/intcount/obj/main.o: test/intcount/main.cpp
+	$(CC) $(CCFLAGS) -I test/intcount test/intcount/main.cpp -c -o test/intcount/obj/main.o
+
+
+
+
+test/matmul/obj/gen_data_file.o: test/matmul/gen_data_file.cpp
+	$(CC) $(CCFLAGS) -I test/matmul test/matmul/gen_data_file.cpp -c -o test/matmul/obj/gen_data_file.o
+
+test/matmul/obj/MatMulMapper.o: test/matmul/MatMulMapper.cpp
+	$(CC) $(CCFLAGS) -I test/matmul test/matmul/MatMulMapper.cpp -c -o test/matmul/obj/MatMulMapper.o
+
+test/matmul/obj/MatMulMapper.cu.o: test/matmul/MatMulMapper.cu include/gpmr/GPMRGPUFunctions.h include/gpmr/GPMRGPUGridFunctions.h
+	$(NVCC) $(NVCCFLAGS) -I test/matmul test/matmul/MatMulMapper.cu -c -o test/matmul/obj/MatMulMapper.cu.o
+
+bin/matmul/matmul: $(MATMUL_OBJ) $(LIB_OUTPUT)
+	$(CC) $(LDFLAGS) -o bin/matmul/matmul $(MATMUL_OBJ) $(LIBS) -Wl,-Map,bin/matmul/matmul.map
+
+test/matmul/obj/main.o: test/matmul/main.cpp
+	$(CC) $(CCFLAGS) -I test/matmul test/matmul/main.cpp -c -o test/matmul/obj/main.o
+
+
+
+
+obj/Binner.cpp.o: src/Binner.cpp include/gpmr/Binner.h
+	$(CC) $(CCFLAGS) src/Binner.cpp -c -o obj/Binner.cpp.o
+
+obj/Chunk.cpp.o: src/Chunk.cpp include/gpmr/Chunk.h
+	$(CC) $(CCFLAGS) src/Chunk.cpp -c -o obj/Chunk.cpp.o
+
+obj/Combiner.cpp.o: src/Combiner.cpp include/gpmr/Combiner.h
+	$(CC) $(CCFLAGS) src/Combiner.cpp -c -o obj/Combiner.cpp.o
+
+obj/EmitConfiguration.cpp.o: src/EmitConfiguration.cpp include/gpmr/EmitConfiguration.h
+	$(CC) $(CCFLAGS) src/EmitConfiguration.cpp -c -o obj/EmitConfiguration.cpp.o
+
+obj/FixedSizeBinner.cpp.o: src/FixedSizeBinner.cpp include/gpmr/FixedSizeBinner.h
+	$(CC) $(CCFLAGS) src/FixedSizeBinner.cpp -c -o obj/FixedSizeBinner.cpp.o
+
+obj/FixedSizeBinnerIORequest.cpp.o: src/FixedSizeBinnerIORequest.cpp include/gpmr/FixedSizeBinnerIORequest.h
+	$(CC) $(CCFLAGS) src/FixedSizeBinnerIORequest.cpp -c -o obj/FixedSizeBinnerIORequest.cpp.o
+
+obj/FixedSizeChunk.cpp.o: src/FixedSizeChunk.cpp include/gpmr/FixedSizeChunk.h
+	$(CC) $(CCFLAGS) src/FixedSizeChunk.cpp -c -o obj/FixedSizeChunk.cpp.o
+
+obj/FixedSizeMapReduceJob.cpp.o: src/FixedSizeMapReduceJob.cpp include/gpmr/FixedSizeMapReduceJob.h
+	$(CC) $(CCFLAGS) src/FixedSizeMapReduceJob.cpp -c -o obj/FixedSizeMapReduceJob.cpp.o
+
+obj/FixedSizeRangePartitioner.cpp.o: src/FixedSizeRangePartitioner.cpp include/gpmr/FixedSizeRangePartitioner.h
+	$(CC) $(CCFLAGS) src/FixedSizeRangePartitioner.cpp -c -o obj/FixedSizeRangePartitioner.cpp.o
+
+obj/FixedSizeRangePartitioner.cu.o: src/FixedSizeRangePartitioner.cu include/gpmr/FixedSizeRangePartitioner.h
+	$(NVCC) $(NVCCFLAGS) src/FixedSizeRangePartitioner.cu -c -o obj/FixedSizeRangePartitioner.cu.o
+
+obj/IntIntSorter.cpp.o: src/IntIntSorter.cpp include/gpmr/IntIntSorter.h
+	$(CC) $(CCFLAGS) src/IntIntSorter.cpp -c -o obj/IntIntSorter.cpp.o
+
+obj/IntIntSorter.cu.o: src/IntIntSorter.cu include/gpmr/IntIntSorter.h
+	$(NVCC) $(NVCCFLAGS) src/IntIntSorter.cu -c -o obj/IntIntSorter.cu.o
+
+obj/IntIntRoundRobinPartitioner.cpp.o: src/IntIntRoundRobinPartitioner.cpp include/gpmr/IntIntRoundRobinPartitioner.h
+	$(CC) $(CCFLAGS) src/IntIntRoundRobinPartitioner.cpp -c -o obj/IntIntRoundRobinPartitioner.cpp.o
+
+obj/IntIntRoundRobinPartitioner.cu.o: src/IntIntRoundRobinPartitioner.cu include/gpmr/IntIntRoundRobinPartitioner.h
+	$(NVCC) $(NVCCFLAGS) src/IntIntRoundRobinPartitioner.cu -c -o obj/IntIntRoundRobinPartitioner.cu.o
+
+obj/ItemCollection.cpp.o: src/ItemCollection.cpp include/gpmr/ItemCollection.h
+	$(CC) $(CCFLAGS) src/ItemCollection.cpp -c -o obj/ItemCollection.cpp.o
+
+obj/MapReduceJob.cpp.o: src/MapReduceJob.cpp include/gpmr/MapReduceJob.h
+	$(CC) $(CCFLAGS) src/MapReduceJob.cpp -c -o obj/MapReduceJob.cpp.o
+
+obj/Mapper.cpp.o: src/Mapper.cpp include/gpmr/Mapper.h
+	$(CC) $(CCFLAGS) src/Mapper.cpp -c -o obj/Mapper.cpp.o
+
+obj/Partitioner.cpp.o: src/Partitioner.cpp include/gpmr/Partitioner.h
+	$(CC) $(CCFLAGS) src/Partitioner.cpp -c -o obj/Partitioner.cpp.o
+
+obj/PartialReducer.cpp.o: src/PartialReducer.cpp include/gpmr/PartialReducer.h
+	$(CC) $(CCFLAGS) src/PartialReducer.cpp -c -o obj/PartialReducer.cpp.o
+
+obj/PreLoadedFixedSizeChunk.cpp.o: src/PreLoadedFixedSizeChunk.cpp include/gpmr/PreLoadedFixedSizeChunk.h
+	$(CC) $(CCFLAGS) src/PreLoadedFixedSizeChunk.cpp -c -o obj/PreLoadedFixedSizeChunk.cpp.o
+
+obj/Reducer.cpp.o: src/Reducer.cpp include/gpmr/Reducer.h
+	$(CC) $(CCFLAGS) src/Reducer.cpp -c -o obj/Reducer.cpp.o
+
+obj/SerializedItemCollection.cpp.o: src/SerializedItemCollection.cpp include/gpmr/SerializedItemCollection.h
+	$(CC) $(CCFLAGS) src/SerializedItemCollection.cpp -c -o obj/SerializedItemCollection.cpp.o
+
+obj/Sorter.cpp.o: src/Sorter.cpp include/gpmr/Sorter.h
+	$(CC) $(CCFLAGS) src/Sorter.cpp -c -o obj/Sorter.cpp.o
+
+obj/VectorOps.cpp.o: src/VectorOps.cpp include/gpmr/VectorOps.h
+	$(CC) $(CCFLAGS) src/VectorOps.cpp -c -o obj/VectorOps.cpp.o
+
+clean:
+	rm -rvf *.ilk *.pdb *.ncb *.sln *.idb *.linkinfo obj/* bin/*/* $(LIB_OUTPUT) test/*/obj/*.o

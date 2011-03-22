@@ -1,0 +1,28 @@
+Tasks                                      | Date         | Completed (X)
+-------------------------------------------+--------------+---------------
+Facebook Fellowship application            | 10 Feb (Wed) | X
+Refactor and abstract code                 | 16 Feb (Tue) | X
+Statically-known Output Map (no reduce)    | 20 Feb (Sat) | X
+CPU Partitioning                           | 21 Feb (Sun) | X
+CPU Sorting                                | 22 Feb (Mon) | X
+Static Output Reduce                       | 23 Feb (Tue) | X
+GPU Partitioning                           | 26 Feb (Fri) | X
+GPU Sorting                                |  1 Mar (Mon) |
+Atomic Output Map (no reduce)              |  2 Mar (Tue) |
+Atomic Output Reduce                       |  4 Mar (Thu) |
+Dynamic-Index Output Map (no reduce)       |  6 Mar (Sat) |
+Dynamic-Index Output Reduce                |  8 Mar (Mon) |
+GPU Partial Reduction                      | 10 Mar (Wed) | X
+N-Buffering of Map                         | 11 Mar (Thu) |
+N-Buffering of Reduce                      | 14 Mar (Sun) |
+Black Scholes                              | 17 Mar (Wed) |
+Histogram    (Intensive Reduce)            | 18 Mar (Thu) | X
+InvertedIndex                              | 19 Mar (Fri) |
+K-Means  (Intensive Partition/Sort)        | 21 Mar (Sun) | X
+Linear Regression                          | 22 Mar (Mon) |
+Matrix Multiplication (Intensive Map)      | 23 Mar (Tue) |
+Word Count                                 | 24 Mar (Wed) |
+Collect timing results                     | 25 Mar (Thu) |
+Generate figures                           | 26 Mar (Fri) |
+Submit abstract                            | 31 Mar (Wed) |
+Submit paper                               |  5 Apr (Mon) |
