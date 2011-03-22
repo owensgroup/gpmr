@@ -1,0 +1,156 @@
+CUDA_DIR=c:/cuda
+MPI_DIR=c:/Program Files/MPICH2
+
+CC=cl /nologo
+CCFLAGS=-I include -I "$(MPI_DIR)/include" -I $(CUDA_DIR)/include /EHsc /ZI /D _CRT_SECURE_NO_DEPRECATE /D MPICH_IGNORE_CXX_SEEK
+NVCC=$(CUDA_DIR)/bin/nvcc.exe
+# NVCCFLAGS=--device-emulation -arch sm_11 -I include -I $(CUDA_DIR)/include -g --compiler-options "/EHsc"
+NVCCFLAGS=-arch sm_11 -I include -I $(CUDA_DIR)/include -g --compiler-options "/EHsc"
+AR=lib /nologo
+LIBS=/link /libpath:lib /libpath:"$(CUDA_DIR)/lib" /libpath:"$(MPI_DIR)/lib" cudpp32.lib gpmr.lib cudacpp.lib oscpp.lib cudart.lib mpi.lib pthread.lib
+LDFLAGS=/ZI /EHsc
+
+.SUFFIXES: .cpp .cu .obj
+
+LIB_SRC=                              \
+src/Binner.cpp                        \
+src/Chunk.cpp                         \
+src/EmitConfiguration.cpp             \
+src/ItemCollection.cpp                \
+src/MapReduceJob.cpp                  \
+src/Mapper.cpp                        \
+src/Partitioner.cpp                   \
+src/PartialReducer.cpp                \
+src/Reducer.cpp                       \
+src/SerializedItemCollection.cpp      \
+src/Sorter.cpp                        \
+src/VectorOps.cpp                     \
+
+LIB_OBJ=                              \
+obj/Binner.cpp.obj                    \
+obj/Chunk.cpp.obj                     \
+obj/EmitConfiguration.cpp.obj         \
+obj/ItemCollection.cpp.obj            \
+obj/MapReduceJob.cpp.obj              \
+obj/Mapper.cpp.obj                    \
+obj/Partitioner.cpp.obj               \
+obj/PartialReducer.cpp.obj            \
+obj/Reducer.cpp.obj                   \
+obj/SerializedItemCollection.cpp.obj  \
+obj/Sorter.cpp.obj                    \
+obj/VectorOps.cpp.obj                 \
+
+LIB_OUTPUT=lib/gpmr.lib
+
+TEST_APPS=                       \
+bin/histogram/gen_data_file.exe  \
+bin/histogram/histogram.exe      \
+
+HISTOGRAM_SRC=                              \
+test/histogram/main.cpp                     \
+test/histogram/HistogramChunk.cpp           \
+test/histogram/HistogramMapper.cpp          \
+test/histogram/HistogramMapper.cu           \
+test/histogram/HistogramMapReduceJob.cpp    \
+test/histogram/HistogramPartitioner.cpp     \
+test/histogram/HistogramPartitioner.cu      \
+test/histogram/HistogramReducer.cpp         \
+test/histogram/HistogramReducer.cu          \
+test/histogram/HistogramSorter.cpp          \
+
+HISTOGRAM_OBJ=                                      \
+test/histogram/obj/main.obj                         \
+test/histogram/obj/HistogramChunk.obj               \
+test/histogram/obj/HistogramMapper.obj              \
+test/histogram/obj/HistogramMapper.cu.obj           \
+test/histogram/obj/HistogramMapReduceJob.obj        \
+test/histogram/obj/HistogramPartitioner.obj         \
+test/histogram/obj/HistogramPartitioner.cu.obj      \
+test/histogram/obj/HistogramReducer.obj             \
+test/histogram/obj/HistogramReducer.cu.obj          \
+test/histogram/obj/HistogramSorter.obj              \
+
+OBJ=$(LIB_OBJ)
+
+all: lib/gpmr.lib $(TEST_APPS)
+
+$(LIB_OUTPUT): $(OBJ)
+	$(AR) /out:$(LIB_OUTPUT) $(OBJ)
+
+bin/histogram/gen_data_file.exe: test/histogram/obj/gen_data_file.obj
+	$(CC) $(LDFLAGS) /Febin/histogram/gen_data_file.exe test/histogram/obj/gen_data_file.obj $(LIBS)
+
+test/histogram/obj/gen_data_file.obj: test/histogram/gen_data_file.cpp
+	$(CC) $(CCFLAGS) -I test/histogram test/histogram/gen_data_file.cpp /c /Fotest/histogram/obj/gen_data_file.obj
+
+bin/histogram/histogram.exe: $(HISTOGRAM_OBJ)
+	$(CC) $(LDFLAGS) /Febin/histogram/histogram.exe $(HISTOGRAM_OBJ) $(LIBS)
+
+test/histogram/obj/main.obj: test/histogram/main.cpp
+	$(CC) $(CCFLAGS) -I test/histogram test/histogram/main.cpp /c /Fotest/histogram/obj/main.obj
+
+test/histogram/obj/HistogramChunk.obj: test/histogram/HistogramChunk.cpp
+	$(CC) $(CCFLAGS) -I test/histogram test/histogram/HistogramChunk.cpp /c /Fotest/histogram/obj/HistogramChunk.obj
+
+test/histogram/obj/HistogramMapper.obj: test/histogram/HistogramMapper.cpp
+	$(CC) $(CCFLAGS) -I test/histogram test/histogram/HistogramMapper.cpp /c /Fotest/histogram/obj/HistogramMapper.obj
+
+test/histogram/obj/HistogramMapper.cu.obj: test/histogram/HistogramMapper.cu include/gpmr/GPMRGPUFunctions.h
+	$(NVCC) $(NVCCFLAGS) -I test/histogram test/histogram/HistogramMapper.cu -c -o test/histogram/obj/HistogramMapper.cu.obj
+
+test/histogram/obj/HistogramMapReduceJob.obj: test/histogram/HistogramMapReduceJob.cpp
+	$(CC) $(CCFLAGS) -I test/histogram test/histogram/HistogramMapReduceJob.cpp /c /Fotest/histogram/obj/HistogramMapReduceJob.obj
+
+test/histogram/obj/HistogramPartitioner.obj: test/histogram/HistogramPartitioner.cpp
+	$(CC) $(CCFLAGS) -I test/histogram test/histogram/HistogramPartitioner.cpp /c /Fotest/histogram/obj/HistogramPartitioner.obj
+
+test/histogram/obj/HistogramPartitioner.cu.obj: test/histogram/HistogramPartitioner.cu include/gpmr/GPMRGPUFunctions.h
+	$(NVCC) $(NVCCFLAGS) -I test/histogram test/histogram/HistogramPartitioner.cu -c -o test/histogram/obj/HistogramPartitioner.cu.obj
+
+test/histogram/obj/HistogramReducer.obj: test/histogram/HistogramReducer.cpp
+	$(CC) $(CCFLAGS) -I test/histogram test/histogram/HistogramReducer.cpp /c /Fotest/histogram/obj/HistogramReducer.obj
+
+test/histogram/obj/HistogramReducer.cu.obj: test/histogram/HistogramReducer.cu include/gpmr/GPMRGPUFunctions.h
+	$(NVCC) $(NVCCFLAGS) -I test/histogram test/histogram/HistogramReducer.cu -c -o test/histogram/obj/HistogramReducer.cu.obj
+
+test/histogram/obj/HistogramSorter.obj: test/histogram/HistogramSorter.cpp
+	$(CC) $(CCFLAGS) -I test/histogram test/histogram/HistogramSorter.cpp /c /Fotest/histogram/obj/HistogramSorter.obj
+
+obj/Binner.cpp.obj: src/Binner.cpp include/gpmr/Binner.h
+	$(CC) $(CCFLAGS) src/Binner.cpp /c /Foobj/Binner.cpp.obj
+
+obj/Chunk.cpp.obj: src/Chunk.cpp include/gpmr/Chunk.h
+	$(CC) $(CCFLAGS) src/Chunk.cpp /c /Foobj/Chunk.cpp.obj
+
+obj/EmitConfiguration.cpp.obj: src/EmitConfiguration.cpp include/gpmr/EmitConfiguration.h
+	$(CC) $(CCFLAGS) src/EmitConfiguration.cpp /c /Foobj/EmitConfiguration.cpp.obj
+
+obj/ItemCollection.cpp.obj: src/ItemCollection.cpp include/gpmr/ItemCollection.h
+	$(CC) $(CCFLAGS) src/ItemCollection.cpp /c /Foobj/ItemCollection.cpp.obj
+
+obj/MapReduceJob.cpp.obj: src/MapReduceJob.cpp include/gpmr/MapReduceJob.h
+	$(CC) $(CCFLAGS) src/MapReduceJob.cpp /c /Foobj/MapReduceJob.cpp.obj
+
+obj/Mapper.cpp.obj: src/Mapper.cpp include/gpmr/Mapper.h
+	$(CC) $(CCFLAGS) src/Mapper.cpp /c /Foobj/Mapper.cpp.obj
+
+obj/Partitioner.cpp.obj: src/Partitioner.cpp include/gpmr/Partitioner.h
+	$(CC) $(CCFLAGS) src/Partitioner.cpp /c /Foobj/Partitioner.cpp.obj
+
+obj/PartialReducer.cpp.obj: src/PartialReducer.cpp include/gpmr/PartialReducer.h
+	$(CC) $(CCFLAGS) src/PartialReducer.cpp /c /Foobj/PartialReducer.cpp.obj
+
+obj/Reducer.cpp.obj: src/Reducer.cpp include/gpmr/Reducer.h
+	$(CC) $(CCFLAGS) src/Reducer.cpp /c /Foobj/Reducer.cpp.obj
+
+obj/SerializedItemCollection.cpp.obj: src/SerializedItemCollection.cpp include/gpmr/SerializedItemCollection.h
+	$(CC) $(CCFLAGS) src/SerializedItemCollection.cpp /c /Foobj/SerializedItemCollection.cpp.obj
+
+obj/Sorter.cpp.obj: src/Sorter.cpp include/gpmr/Sorter.h
+	$(CC) $(CCFLAGS) src/Sorter.cpp /c /Foobj/Sorter.cpp.obj
+
+obj/VectorOps.cpp.obj: src/VectorOps.cpp include/gpmr/VectorOps.h
+	$(CC) $(CCFLAGS) src/VectorOps.cpp /c /Foobj/VectorOps.cpp.obj
+
+clean:
+	rm -rvf *.ilk *.pdb *.ncb *.sln *.idb *.linkinfo obj/* bin/*/* $(LIB_OUTPUT) test/*/obj/*.obj
